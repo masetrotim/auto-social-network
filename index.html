@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, initial-scale=1.0">
+  <title>Лента</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #18191a;
+      font-family: 'Montserrat', Arial, sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+    }
+    .layout {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 62px; /* чтобы всё было под шапкой */
+}
+.sidebar {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  background: #18191a;
+  border-right: 1.5px solid #23242a;
+  height: calc(100vh - 62px); /* минус высота шапки */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  position: sticky;
+  top: 62px; /* высота шапки */
+  z-index: 2;
+  box-shadow: 2px 0 16px 0 rgba(0,0,0,0.10);
+  /* overflow-y: auto;  <-- УДАЛИ ЭТУ СТРОКУ */
+  /* overflow-x: hidden; <-- УДАЛИ ЭТУ СТРОКУ */
+}
+
+    #sidebar-container ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #sidebar-container li {
+      margin: 0;
+    }
+    #sidebar-container a,
+    #sidebar-container .menu-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none;
+      color: #d3d8de;
+      font-size: 17px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 12px;
+      transition: background 0.18s, color 0.18s;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+    #sidebar-container a i,
+    #sidebar-container .menu-link i {
+      font-size: 20px;
+      color: #1da1f2;
+      min-width: 24px;
+      text-align: center;
+      transition: color 0.18s;
+    }
+    #sidebar-container a:hover,
+    #sidebar-container .menu-link:hover,
+    #sidebar-container .active,
+    #sidebar-container li.active > a {
+      background: #23242a;
+      color: #fff;
+    }
+    #sidebar-container a:hover i,
+    #sidebar-container .menu-link:hover i,
+    #sidebar-container .active i,
+    #sidebar-container li.active > a i {
+      color: #fff;
+    }
+    .main-center {
+      width: 600px;
+      min-width: 600px;
+      max-width: 600px;
+      background: #18191a;
+      border-left: 1.5px solid #23242a;
+      border-right: 1.5px solid #23242a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      z-index: 1;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .main-content {
+      flex: 1;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .right-sidebar {
+      width: 350px;
+      min-width: 350px;
+      max-width: 350px;
+      background: #18191a;
+      border-left: 1.5px solid #23242a;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      position: sticky;
+      top: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-top: 62px;
+    }
+    .tabs-block {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #18191a;
+      margin: 0 auto;
+      width: 100%;
+      border-bottom: 1.5px solid #23242a;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .tabs-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      width: 100%;
+      position: relative;
+    }
+    .tabs {
+      display: flex;
+      flex: 1 1 auto;
+      justify-content: flex-start;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
+    }
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: #AAB8C2;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 18px 0;
+      border-bottom: 2.5px solid transparent;
+      transition: color 0.18s, border-bottom 0.18s, background 0.18s;
+      margin: 0 8px 0 0;
+      letter-spacing: 0.01em;
+      position: relative;
+      min-width: 0;
+    }
+    .tab-btn:last-child {
+      margin-right: 0;
+    }
+    .tab-btn.active {
+      color: #fff;
+      border-bottom: 2.5px solid #1da1f2;
+      background: #18191a;
+    }
+    .tab-btn:not(.active):hover {
+      background: #23242a;
+      color: #fff;
+    }
+    .main-add-post-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 32px auto 0 auto;
+      padding: 10px 28px;
+      background: linear-gradient(90deg, #1da1f2 0%, #0a8cd8 100%);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      box-shadow: 0 2px 12px 0 #1da1f244;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+      letter-spacing: 0.01em;
+      outline: none;
+      min-width: 120px;
+      min-height: 40px;
+      max-width: 220px;
+    }
+    .main-add-post-btn i {
+      font-size: 17px;
+      margin-right: 2px;
+    }
+    .main-add-post-btn:hover {
+      background: linear-gradient(90deg, #0a8cd8 0%, #1da1f2 100%);
+      color: #fff;
+      box-shadow: 0 4px 18px 0 #1da1f277;
+      transform: translateY(-2px) scale(1.04);
+    }
+    .post-type-filter {
+  position: relative;
+  min-width: 180px;
+  margin: 40px 32px 24px auto; /* ← добавь 24px снизу */
+  display: flex;
+  justify-content: flex-end;
+}
+    .post-type-select {
+      width: 100%;
+      padding: 8px 36px 8px 14px;
+      font-size: 15px;
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-weight: 600;
+      color: #d3d8de;
+      background: #23242a;
+      border: 1.5px solid #23242a;
+      border-radius: 8px;
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+      transition: border 0.18s, box-shadow 0.18s;
+      box-shadow: 0 2px 8px 0 #1da1f211;
+    }
+    .post-type-select:focus {
+      border: 1.5px solid #1da1f2;
+      box-shadow: 0 2px 12px 0 #1da1f244;
+    }
+    .post-type-filter::after {
+      content: '\f078';
+      font-family: "Font Awesome 5 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #1da1f2;
+      pointer-events: none;
+      font-size: 13px;
+    }
+    .tab-content {
+      display: none;
+      width: 100%;
+      min-height: 120px;
+      padding: 24px 0 0 0;
+      font-size: 18px;
+      color: #d3d8de;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    /* --- СТИЛИ ДЛЯ ПОСТОВ (адаптировано под общий стиль) --- */
+    .journal-post,
+.popular-post,
+.article-post {
+  background: #18191a;
+  border-radius: 0;
+  border: 1.5px solid #23242a;
+  max-width: 600px;
+  /* margin: 32px auto 0 auto;  <-- удалить эту строку */
+  margin: 0 auto; /* ← посты идут друг за другом без отступа */
+  position: relative;
+  overflow: hidden;
+  padding: 0 0 24px 0;
+  width: 100%;
+  box-shadow: none;
+}
+    .mini-car-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 10px;
+      padding: 4px 10px 4px 4px;
+      margin: 10px 0 0 0;
+      box-shadow: 0 1px 6px 0 #0003;
+      min-width: 0;
+      width: fit-content;
+      max-width: 340px;
+      backdrop-filter: blur(1.5px);
+    }
+    .mini-car-badge.gold-modern {
+      background: rgba(40, 40, 30, 0.85);
+      border: 1.5px solid #FFD700;
+    }
+    .mini-car-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      object-fit: cover;
+      border: 1px solid #fff;
+      background: #eee;
+      box-shadow: 0 1px 4px #0002;
+      flex-shrink: 0;
+    }
+    .mini-car-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .mini-car-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.1;
+    }
+    .mini-car-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: #fff;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      letter-spacing: 0.2px;
+      line-height: 1.1;
+    }
+    .mini-car-user {
+      font-size: 13px;
+      color: #1DA1F2;
+      font-weight: 500;
+      margin-top: 2px;
+      opacity: 0.95;
+    }
+    .mini-car-rarity {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 7px;
+      padding: 1px 12px 1px 8px;
+      letter-spacing: 1px;
+      position: relative;
+      top: 8px;
+    }
+    .mini-car-rarity.gold-modern {
+      color: #FFD700;
+      background: rgba(255, 215, 0, 0.13);
+      border: 1.5px solid #FFD700;
+      box-shadow: 0 0 7px 0 #ffd70033;
+      text-shadow: 0 1px 6px #fffbe6cc, 0 0 2px #ffe60044;
+    }
+    .mini-car-rarity.gold-modern i {
+      font-size: 1.1em;
+      color: #FFD700;
+      margin-right: 3px;
+    }
+    .user-identifier:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+    @media (max-width: 1400px) {
+      .right-sidebar {
+        display: none;
+      }
+      .main-center {
+        margin-right: 0;
+      }
+    }
+    @media (max-width: 1100px) {
+      .sidebar {
+        display: none;
+      }
+      .main-center {
+        margin-left: 0;
+      }
+    }
+    @media (max-width: 700px) {
+      .main-center {
+        border-left: none;
+        border-right: none;
+        min-width: 0;
+        max-width: 100vw;
+      }
+      .main-add-post-btn {
+        width: 98%;
+        font-size: 15px;
+        padding: 10px 0;
+      }
+      .post-type-filter {
+        min-width: 120px;
+        margin-right: 8px;
+        margin-top: 24px;
+      }
+      .journal-post,
+      .popular-post,
+      .article-post {
+        margin: 24px 0 0 0;
+        border-width: 1px;
+      }
+    }
+
+
+
+
+.car-filter-block {
+  background: #202126;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px 0 #1da1f211;
+  padding: 12px 10px 12px 10px;
+  margin: 0 12px 0 12px;
+  gap: 10px;
+  border: 1.5px solid #23242a;
+  display: flex;
+  flex-direction: column;
+}
+
+.car-filter-panel {
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.car-filter-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 8px; /* отступ между селектами */
+}
+
+.car-filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.car-filter-select {
+  width: 100%;
+    padding: 8px 28px 8px 12px;
+  font-size: 15px;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 600;
+  color: #d3d8de;
+  background: #23242a;
+  border: 1.5px solid #23242a;
+  border-radius: 7px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border 0.18s, box-shadow 0.18s;
+  box-shadow: none;
+}
+.car-filter-select:focus {
+  border: 1.5px solid #1da1f2;
+  box-shadow: 0 2px 12px 0 #1da1f244;
+}
+.car-filter-select:disabled {
+  color: #888;
+  background: #23242a;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.car-filter-row select {
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 2L6 6L10 2' stroke='%231da1f2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 16px 10px;
+}
+
+.car-filter-apply-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 9px 0;
+  background: linear-gradient(90deg, #1da1f2 0%, #2563eb 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 2px 12px 0 #1da1f244;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+  letter-spacing: 0.01em;
+  outline: none;
+}
+.car-filter-apply-btn:hover {
+  background: linear-gradient(90deg, #2563eb 0%, #1da1f2 100%);
+  color: #fff;
+  box-shadow: 0 4px 18px 0 #1da1f277;
+  transform: translateY(-2px) scale(1.03);
+}
+
+.sidebar-widget {
+  background: #202126;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px 0 #1da1f211;
+  padding: 18px 14px 14px 14px;
+  margin: 32px 12px 0 12px;
+  border: 1.5px solid #23242a;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+
+
+
+.sidebar-tab {
+  background: none;
+  border: none;
+  color: #aab8c2;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 0 10px 0;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  transition: 
+    color 0.18s, 
+    border-color 0.18s, 
+    background 0.18s;
+  outline: none;
+  margin-bottom: -2px;
+  position: relative;
+}
+
+.sidebar-tab:hover:not(.active) {
+  color: #7daaff;
+  background: #22242a33;
+  border-radius: 7px 7px 0 0;
+}
+
+.sidebar-tab.active {
+  color: #1da1f2;
+  border-bottom: 2.5px solid #1da1f2;
+  background: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.trending-header-modern {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
+.trending-icon-modern {
+  font-size: 18px;
+  background: linear-gradient(90deg, #1da1f2 60%, #2563eb 100%);
+  border-radius: 50%;
+  padding: 4px 6px 4px 6px;
+  color: #fff;
+  box-shadow: 0 2px 8px 0 #1da1f244;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trending-title-modern {
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  background: linear-gradient(90deg, #1da1f2 40%, #2563eb 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  padding-bottom: 2px;
+  border-bottom: 2px solid #1da1f2;
+  transition: border-color 0.2s;
+}
+
+.trending-header-modern:hover .trending-title-modern {
+  border-bottom: 2px solid #2563eb;
+}
+
+.search-panel {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+}
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+#search-input {
+  width: 100%;
+  padding: 12px 38px 12px 38px;
+  border-radius: 24px;
+  border: none;
+  background: #18191c;
+  color: #fff;
+  font-size: 17px;
+  outline: none;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7daaff;
+  font-size: 18px;
+  pointer-events: none;
+}
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1da1f2;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  display: none;
+}
+.search-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  background: #18191c;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #000a;
+  z-index: 10;
+  padding: 0;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.search-suggest-header {
+  padding: 14px 18px 8px 18px;
+  color: #aab8c2;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #23242a;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+}
+.search-suggest-header:hover {
+  background: #23242a;
+}
+.search-suggest-header::after {
+  content: "→";
+  color: #1da1f2;
+  font-size: 18px;
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.search-suggest-header:hover::after {
+  opacity: 1;
+}
+.search-suggest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.search-suggest-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.search-suggest-list li:hover {
+  background: #23242a;
+}
+.search-suggest-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #23242a;
+  object-fit: cover;
+}
+.search-suggest-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+}
+.search-suggest-username {
+  color: #aab8c2;
+  font-size: 15px;
+}
+.search-suggest-verified {
+  color: #1da1f2;
+  font-size: 17px;
+  margin-left: 4px;
+}
+
+#sidebar-container .menu-link:hover,
+#sidebar-container .menu-item.active > .menu-link:hover {
+  background: #2a2c33;
+  color: #1da1f2;
+  transition: background 0.18s, color 0.18s;
+}
+#sidebar-container .menu-link:hover i,
+#sidebar-container .menu-item.active > .menu-link:hover i {
+  color: #1da1f2;
+}
+
+.main-header {
+  width: 100vw;
+  min-height: 62px;
+  background: #18191a;
+  border-bottom: 2.5px solid #1da1f2;
+  box-shadow: 0 2px 18px 0 #1da1f211;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+.header-inner {
+  width: 100%;
+  max-width: 1440px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 150px;
+  height: 62px;
+  box-sizing: border-box;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.header-profile-fixed {
+  width: 62px;
+  min-width: 62px;
+  max-width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+
+#headerAvatarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+.logo-icon-circle {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(90deg, #1da1f2 60%, #2563eb 100%);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35em;
+  box-shadow: 0 2px 8px 0 #1da1f244;
+}
+.logo-text {
+  font-size: 1.18em;
+  font-weight: 800;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.logo-text-blue {
+  color: #1da1f2;
+}
+.logo-text-white {
+  color: #fff;
+  margin-left: 2px;
+}
+/* ...замени этот блок в своем CSS... */
+.header-search-modern {
+  /* margin-left: auto;  <-- УДАЛИ ЭТУ СТРОКУ */
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.search-panel-modern {
+  position: relative;
+  width: 260px;
+  max-width: 100%;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  background: #20232a;
+  border-radius: 999px;
+  box-shadow: 0 2px 12px 0 #1da1f211;
+  border: 2px solid #293042; /* <-- базовая обводка, хорошо видна на темном фоне */
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.search-panel-modern:focus-within {
+  border-color: #1da1f2; /* яркая тематическая обводка при фокусе */
+  box-shadow: 0 0 0 2px #1da1f288;
+  background: #23242a;
+}
+.search-panel-modern input[type="text"] {
+  width: 100%;
+  height: 38px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 0 44px 0 44px;
+  font-size: 16px;
+  color: #fff;
+  outline: none;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  transition: background 0.18s;
+}
+.search-icon-modern {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1da1f2;
+  font-size: 18px;
+  pointer-events: none;
+  opacity: 0.92;
+  transition: color 0.18s;
+}
+.search-panel-modern input[type="text"]:focus ~ .search-icon-modern {
+  color: #2563eb;
+  opacity: 1;
+}
+.search-clear-btn-modern {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1da1f2;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  display: none;
+  transition: color 0.18s;
+  line-height: 1;
+}
+.search-clear-btn-modern:hover {
+  color: #2563eb;
+}
+@media (max-width: 900px) {
+  .search-panel-modern { width: 250px; }
+}
+@media (max-width: 700px) {
+  .header-inner { padding: 0 6px; }
+  .search-panel-modern { width: 110px; }
+  .logo-text { font-size: 0.98em; }
+}
+
+.header-notify-btn {
+  margin-left: 32px;
+  background: linear-gradient(90deg, #23242a 60%, #1a1b1f 100%);
+  border: 2px solid #23242a;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1da1f2; /* светло-сине-голубой цвет для иконки */
+  font-size: 21px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 #1da1f211;
+  position: relative;
+  transition: 
+    border-color 0.18s, 
+    background 0.18s, 
+    color 0.18s, 
+    box-shadow 0.18s, 
+    transform 0.12s;
+  outline: none;
+}
+.header-notify-btn:hover, .header-notify-btn:focus {
+  border-color: #1da1f2;
+  background: #23242a;
+  color: #fff; /* иконка становится белой при наведении */
+  box-shadow: 0 4px 18px 0 #1da1f277;
+  transform: translateY(-2px) scale(1.07);
+}
+.header-notify-btn i {
+  pointer-events: none;
+}
+.notify-dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  background: linear-gradient(90deg, #ff3b3b 60%, #ffb13b 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 6px #ff3b3b99;
+  display: block;
+  border: 2px solid #18191a;
+  animation: notify-dot-pulse 1.2s infinite alternate;
+}
+@keyframes notify-dot-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.25); opacity: 0.7; }
+}
+
+.header-msg-btn {
+  margin-left: 18px;
+  background: linear-gradient(90deg, #23242a 60%, #1a1b1f 100%);
+  border: 2px solid #23242a;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1da1f2;
+  font-size: 21px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 #1da1f211;
+  position: relative;
+  transition: 
+    border-color 0.18s, 
+    background 0.18s, 
+    color 0.18s, 
+    box-shadow 0.18s, 
+    transform 0.12s;
+  outline: none;
+}
+.header-msg-btn:hover, .header-msg-btn:focus {
+  border-color: #1da1f2;
+  background: #23242a;
+  color: #fff; /* теперь иконка становится белой при наведении */
+  box-shadow: 0 4px 18px 0 #1da1f277;
+  transform: translateY(-2px) scale(1.07);
+}
+.header-msg-btn i {
+  pointer-events: none;
+}
+
+.header-auth-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 18px;
+}
+
+.auth-btn {
+  padding: 0 18px;
+  height: 34px;
+  font-size: 15px;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1.5px solid #1da1f2;
+  outline: none;
+  cursor: pointer;
+  background: transparent;
+  color: #1da1f2;
+  box-shadow: none;
+  letter-spacing: 0.01em;
+  transition: 
+    background 0.18s, 
+    color 0.18s, 
+    border-color 0.18s, 
+    box-shadow 0.18s, 
+    transform 0.12s;
+}
+
+.auth-btn.login-btn {
+  /* минимализм: только обводка и синий текст */
+}
+
+.auth-btn.register-btn {
+  background: linear-gradient(90deg, #1da1f2 0%, #2563eb 100%);
+  color: #fff;
+  border: none;
+}
+
+.auth-btn:hover, .auth-btn:focus {
+  background: #23242a;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 12px 0 #1da1f211;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.auth-btn.register-btn:hover, .auth-btn.register-btn:focus {
+  background: linear-gradient(90deg, #2563eb 0%, #1da1f2 100%);
+  color: #fff;
+  box-shadow: 0 4px 18px 0 #1da1f277;
+}
+
+.avatar-btn {
+  background: linear-gradient(90deg, #23242a 60%, #1da1f2 100%);
+  border: 2px solid #1da1f2;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 #1da1f211;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+  outline: none;
+  padding: 0;
+}
+.avatar-btn:hover, .avatar-btn:focus {
+  border-color: #2563eb;
+  box-shadow: 0 4px 18px 0 #1da1f277;
+  transform: translateY(-2px) scale(1.07);
+}
+.avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 6px #1da1f244;
+}
+
+#authOverlay {
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-overlay-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(24,25,26,0.92);
+  backdrop-filter: blur(2px);
+}
+.auth-overlay-spinner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.auth-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #1da1f2;
+  border-top: 4px solid #23242a;
+  border-radius: 50%;
+  animation: spinAuth 0.8s linear infinite;
+}
+@keyframes spinAuth {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+
+.header-inner,
+.header-left,
+.header-right,
+.header-actions {
+  display: flex;
+  align-items: center;
+  height: 62px;
+}
+
+
+
+.header-msg-btn,
+.header-notify-btn,
+.avatar-btn {
+  height: 44px;
+  width: 44px;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.auth-btn {
+  height: 34px;
+  margin: 0;
+  align-items: center;
+  display: flex;
+}
+
+.active-car-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 12px 12px 12px;
+  min-height: 0;
+}
+.car-filter-tag {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #1da1f2 0%, #2563eb 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 999px;
+  padding: 6px 16px 6px 14px;
+  box-shadow: 0 2px 8px 0 #1da1f244;
+  position: relative;
+  border: 1.5px solid #23242a;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, box-shadow 0.18s;
+  cursor: default;
+  user-select: none;
+}
+.car-filter-tag .car-filter-remove {
+  margin-left: 10px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s, color 0.18s;
+  opacity: 0.85;
+}
+.car-filter-tag .car-filter-remove:hover {
+  background: #23242a;
+  color: #ff3b3b;
+  opacity: 1;
+}
+
+.trending-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #23242a;
+  min-height: 48px;
+  transition: background 0.18s;
+}
+
+.trending-item:last-child {
+  border-bottom: none;
+}
+
+
+.trending-item:hover {
+  background: #23242a;
+}
+
+.trending-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #23242a;
+  border: 1.5px solid #1da1f2;
+  box-shadow: 0 1px 4px 0 #1da1f244;
+  flex-shrink: 0;
+}
+.trending-info {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.trending-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+  line-height: 1.1;
+}
+.trending-username {
+  font-size: 13px;
+  color: #7daaff;
+  opacity: 0.95;
+  margin-top: 1px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+
+
+/* Удалить все старые стили .trending-follow-btn и .trending-follow-btn:hover */
+
+/* Новый современный стиль кнопки "Подписаться" */
+.trending-follow-btn {
+  background: #23242a;
+  border: 2px solid #1da1f2;
+  color: #1da1f2;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  margin-left: 8px;
+  min-width: 0;
+  min-height: 28px;
+  line-height: 1.1;
+  box-sizing: border-box;
+  box-shadow: none;
+  width: auto;
+  display: inline-block;
+  text-align: center;
+}
+
+.trending-follow-btn:hover,
+.trending-follow-btn:focus {
+  background: #1a2330;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px 0 #1da1f244;
+}
+
+
+
+
+
+.trending-more {
+  display: block;
+  text-align: left;
+  color: #7daaff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 10px 0 0 0;
+  text-decoration: none;
+  padding-left: 2px;
+  transition: color 0.18s;
+}
+
+.trending-more:hover {
+  color: #1da1f2;
+  text-decoration: underline;
+}
+
+
+
+
+  </style>
+</head>
+<body>
+
+  <div id="authOverlay" style="display:none;">
+  <div class="auth-overlay-bg"></div>
+  <div class="auth-overlay-spinner">
+    <div class="auth-spinner"></div>
+    <div style="margin-top:18px;color:#fff;font-weight:600;font-size:17px;">Вход...</div>
+  </div>
+</div>
+
+
+
+<div id="header-placeholder"></div>
+
+
+  <div class="layout">
+    <nav class="sidebar">
+      <div id="sidebar-container"></div>
+    </nav>
+    <main class="main-center">
+      <div class="tabs-block">
+        <div class="tabs-row">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="foryou">Для тебя</button>
+            <button class="tab-btn" data-tab="subs">Подписки</button>
+          </div>
+        </div>
+      </div>
+      <!-- Кнопка по центру -->
+      <button class="main-add-post-btn"><i class="fas fa-plus"></i> Добавить пост</button>
+      <!-- Фильтр ниже и правее -->
+      <div class="post-type-filter">
+        <select class="post-type-select">
+          <option value="all">Все посты</option>
+          <option value="users">Посты пользователей</option>
+          <option value="communities">Посты сообществ</option>
+          <option value="logs">Бортжурналы</option>
+        </select>
+      </div>
+      <!-- Один пост из recommendations.html, адаптирован под общий стиль -->
+      <div class="journal-post">
+  <div style="position:relative;">
+    <img src="https://mollerauto.lt/media/catalog/product/cache/9f50a19ae00c847d884be9f7ea7b58f4/8/9/89fcb330e2e7b4f9bfc94ed4fe6f6449863bc0f9092ef5682ff0036855823110.jpeg" alt="Audi Q5 Gold" style="width:100%;display:block;max-height:340px;object-fit:cover;filter:brightness(0.82);">
+    <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(24,25,26,0.13) 60%,rgba(24,25,26,0.32) 100%);pointer-events:none;"></div>
+    <span style="position:absolute;bottom:14px;right:18px;background:rgba(0,0,0,0.48);color:#fff;font-size:16px;font-weight:600;padding:4px 13px;border-radius:7px;backdrop-filter:blur(1.5px);z-index:2;">10 фото</span>
+    <span style="position:absolute;top:14px;left:18px;background:linear-gradient(90deg,#1DA1F2 0%,#2563eb 100%);color:#fff;font-weight:700;font-size:14px;padding:4px 14px 4px 10px;border-radius:7px;box-shadow:0 2px 10px 0 #1da1f244,0 1.5px 6px 0 #0005;display:flex;align-items:center;gap:7px;letter-spacing:1px;text-transform:uppercase;z-index:3;border:2px solid #fff;text-shadow:0 1px 6px #23243a88,0 0 2px #1da1f2cc;">
+      <i class="fas fa-book" style="color:#fff;font-size:1em;"></i>
+      История
+    </span>
+  </div>
+  <div style="padding:0 28px;">
+    <div class="mini-car-badge gold-modern" style="margin-top:-22px;box-shadow:0 4px 24px 0 #0003;">
+      <img src="https://bravoauto.lt/assets/images/auto/6627/883ce9f123f8150dfb2ca85a8eb12ea866e0145186f5c.jpg" alt="Audi Q5" class="mini-car-img">
+      <div class="mini-car-info">
+        <div class="mini-car-row">
+          <span class="mini-car-title">Audi Q5 XZT T</span>
+          <span class="mini-car-rarity gold-modern">
+            <i class="fas fa-crown"></i>
+            GOLD
+          </span>
+        </div>
+        <span class="mini-car-user">@grom_q5</span>
+      </div>
+    </div>
+    <div style="font-size:16px;color:#bbb;font-weight:500;margin-top:30px;">2 дня назад</div>
+    <div style="font-size:2.1rem;font-weight:700;color:#fff;margin:8px 0 12px 0;line-height:1.15;">
+      Классный гаджет, спорный автомобиль: впечатления от Audi Q5 Turbo
+    </div>
+    <div style="font-size:1.1rem;color:#e4e6eb;margin-bottom:10px;line-height:1.5;">
+      За годы, что у меня есть водительское удостоверение, мне довелось покататься на огромном количестве автомобилей: от ВАЗ-2105 и Skoda Fabia до Tank 500 и Lincoln Navigator. Признаюсь сразу: не могу я...
+      <a href="#" style="color:#1DA1F2;font-weight:600;text-decoration:none;margin-left:8px;">Читать дальше</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:18px;">
+      <img src="https://randomuser.me/api/portraits/men/85.jpg" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+      <div>
+        <span style="font-size:15px;color:#fff;font-weight:600;">Алексей Громов</span>
+        <div class="user-identifier" style="font-size:15px;color:#7daaff;margin:2px 0 2px 0;">@gromovdrive</div>
+      </div>
+      <button style="background:none;border:1.5px solid #4fa3f7;color:#4fa3f7;font-weight:600;padding:4px 13px;border-radius:8px;font-size:14px;cursor:pointer;transition:.2s;margin-left:8px;">Подписаться</button>
+    </div>
+    <!-- Минималистичный блок реакций, как на vs1.html -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 0 0;font-size:16px;color:#bbb;">
+      <span style="display:flex;align-items:center;gap:28px;">
+        <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="far fa-comment"></i> 66</span>
+        <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="fas fa-retweet"></i> 6</span>
+        <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="far fa-heart"></i> 461</span>
+      </span>
+      <span style="display:flex;align-items:center;gap:7px;">
+        <i class="fas fa-chart-bar"></i> 1.2K
+      </span>
+    </div>
+  </div>
+</div>
+
+
+
+
+      
+
+
+
+<div class="popular-post">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 28px 0 28px;">
+    <div style="display:flex;align-items:flex-start;gap:16px;width:100%;">
+      <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:18px;">
+          <span style="font-weight:600;font-size:18px;color:#fff;line-height:1.1;white-space:nowrap;">Дмитрий Свечиус</span>
+          <button class="subscribe-btn" style="background:none;border:1.5px solid #4fa3f7;color:#4fa3f7;font-weight:600;padding:4px 18px;border-radius:8px;font-size:14px;cursor:pointer;transition:.2s;">Подписаться</button>
+        </div>
+        <div style="margin-top:2px;">
+          <div class="user-identifier" style="font-size:15px;color:#7daaff;display:inline-block;">@dsvetchius</div>
+          <div style="font-size:14px;color:#bbb;margin-top:2px;">1 ч назад</div>
+        </div>
+      </div>
+    </div>
+    <button class="post-menu-btn" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:50%;transition:background .2s;">
+      <i class="fas fa-ellipsis-h"></i>
+    </button>
+  </div>
+  <div style="margin:18px 28px 0 28px;font-size:17px;color:#fff;line-height:1.5;">
+    Сегодня впервые побывал на авто-выставке, где собрались энтузиасты со всей страны. Было круто увидеть столько разных людей, услышать их истории и зарядиться атмосферой! Даже не думал, что обычные выходные могут вдохновлять так сильно.
+  </div>
+  <div style="margin:18px 28px 0 28px;">
+    <img src="https://www.topgear.com/sites/default/files/2024/11/Original-25901-aw609563.jpg" alt="Kia EV6" style="width:100%;border-radius:10px;object-fit:cover;">
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 28px 0 28px;font-size:16px;color:#bbb;">
+    <span style="display:flex;align-items:center;gap:18px;">
+      <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="far fa-comment"></i> 34</span>
+      <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="fas fa-retweet"></i> 7</span>
+      <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="far fa-heart"></i> 210</span>
+    </span>
+    <span style="display:flex;align-items:center;gap:7px;">
+      <i class="fas fa-chart-bar"></i> 12K
+    </span>
+  </div>
+</div>
+
+
+
+<div class="popular-post-group">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 28px 0 28px;">
+    <div style="display:flex;align-items:flex-start;gap:16px;width:100%;">
+      <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="avatar" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:18px;">
+          <span style="font-weight:600;font-size:18px;color:#fff;line-height:1.1;white-space:nowrap;">АвтоКлуб Россия</span>
+          <button class="subscribe-btn" style="background:none;border:1.5px solid #4fa3f7;color:#4fa3f7;font-weight:600;padding:4px 18px;border-radius:8px;font-size:14px;cursor:pointer;transition:.2s;">Подписаться</button>
+        </div>
+        <div style="margin-top:2px;">
+          <div class="user-identifier" style="font-size:15px;color:#7daaff;display:inline-block;">@autoclub_ru</div>
+          <div style="font-size:14px;color:#bbb;margin-top:2px;">3 ч назад</div>
+        </div>
+      </div>
+    </div>
+    <button class="post-menu-btn" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:50%;transition:background .2s;">
+      <i class="fas fa-ellipsis-h"></i>
+    </button>
+  </div>
+  <div style="margin:18px 28px 0 28px;font-size:17px;color:#fff;line-height:1.5;">
+    Друзья! Уже в эти выходные состоится наш ежегодный автослет на ВДНХ. Ждём всех участников и гостей — будет много интересного, конкурсы, тест-драйвы и призы!
+  </div>
+  <div style="margin:18px 28px 0 28px;">
+    <img src="https://a.d-cd.net/532b75u-960.jpg" alt="АвтоКлуб" style="width:100%;border-radius:10px;object-fit:cover;">
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 28px 0 28px;font-size:16px;color:#bbb;">
+    <span style="display:flex;align-items:center;gap:18px;">
+      <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="far fa-comment"></i> 34</span>
+      <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="fas fa-retweet"></i> 7</span>
+      <span style="display:flex;align-items:center;gap:7px;cursor:pointer;"><i class="far fa-heart"></i> 210</span>
+    </span>
+    <span style="display:flex;align-items:center;gap:7px;">
+      <i class="fas fa-chart-bar"></i> 12K
+    </span>
+  </div>
+</div>
+
+
+
+
+
+
+      <div class="main-content">
+        <div class="tab-content active" id="tab-foryou"></div>
+        <div class="tab-content" id="tab-subs"></div>
+      </div>
+    </main>
+    <aside class="right-sidebar">
+
+
+
+
+<div id="active-car-filters" class="active-car-filters">
+</div>
+
+<div class="car-filter-block">
+  <div class="car-filter-panel">
+    <div class="car-filter-row">
+      <select id="brand-select" class="car-filter-select">
+        <option value="">Все марки</option>
+        <option value="audi">Audi</option>
+        <option value="bmw">BMW</option>
+        <option value="kia">Kia</option>
+        <option value="toyota">Toyota</option>
+      </select>
+    </div>
+    <div class="car-filter-row">
+      <select id="model-select" class="car-filter-select" disabled>
+        <option value="">Все модели</option>
+      </select>
+    </div>
+    <button class="car-filter-apply-btn" type="button">Применить</button>
+  </div>
+</div>
+
+
+
+
+
+
+
+<div class="sidebar-widget">
+  <div class="trending-header-modern">
+  <span class="trending-icon-modern">🔥</span>
+  <span class="trending-title-modern">В тренде</span>
+  </div>
+  
+  <div id="trending-list"></div>
+  
+  
+</div>
+
+
+    </aside>
+  </div>
+  <script>
+
+
+fetch('header.html')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('header-placeholder').outerHTML = html;
+    });
+
+
+// Сопоставление марок и моделей
+const carModels = {
+  audi: ["A3", "A4", "Q5", "Q7"],
+  bmw: ["X1", "X3", "X5", "M5"],
+  kia: ["Rio", "Ceed", "EV6", "Sportage"],
+  toyota: ["Camry", "Corolla", "RAV4", "Land Cruiser"]
+};
+
+const brandSelect = document.getElementById('brand-select');
+const modelSelect = document.getElementById('model-select');
+
+// При изменении марки
+brandSelect.addEventListener('change', function() {
+  const brand = this.value;
+  modelSelect.innerHTML = '<option value="">Все модели</option>';
+  if (brand && carModels[brand]) {
+    carModels[brand].forEach(model => {
+      const option = document.createElement('option');
+      option.value = model.toLowerCase();
+      option.textContent = model;
+      modelSelect.appendChild(option);
+    });
+    modelSelect.disabled = false;
+  } else {
+    modelSelect.disabled = true;
+  }
+});
+
+
+    function highlightActiveSidebarMenu() {
+  const path = window.location.pathname;
+  let activeMenu = '';
+  if (path.includes('vs1.html')) {
+    activeMenu = 'search';
+  } else if (path.includes('rec1.html')) {
+    activeMenu = 'feed';
+  } else if (path.includes('cars.html')) {
+    activeMenu = 'cars';
+  } else if (path.includes('jpurnalsbort.html')) {
+    activeMenu = 'journals';
+  } else if (path.includes('communities.html')) {
+    activeMenu = 'communities';
+  } else if (path.includes('notifications.html')) {
+    activeMenu = 'notifications';
+  } else if (path.includes('messages.html')) {
+    activeMenu = 'messages';
+  } else if (path.includes('profile.html')) {
+    activeMenu = 'profile';
+  }
+
+  document.querySelectorAll('.menu-link').forEach(link => {
+    if (link.dataset.menu === activeMenu) {
+      link.parentElement.classList.add('active');
+    } else {
+      link.parentElement.classList.remove('active');
+    }
+  });
+}
+
+fetch('sidebar.html')
+  .then(response => response.text())
+  .then(html => {
+    document.getElementById('sidebar-container').innerHTML = html;
+    highlightActiveSidebarMenu(); // ВАЖНО: вызываем после вставки меню!
+  });
+
+    // Простая логика табов
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabBtns = document.querySelectorAll('.tabs .tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabBtns.forEach((btn, idx) => {
+        btn.addEventListener('click', function() {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          tabContents.forEach(tc => tc.classList.remove('active'));
+          tabContents[idx].classList.add('active');
+        });
+      });
+    });
+
+
+   
+
+
+
+
+
+
+document.querySelector('.post-type-select').addEventListener('change', function() {
+  const value = this.value;
+
+  // Сначала показываем все посты
+  document.querySelectorAll('.popular-post, .popular-post-group, .journal-post').forEach(post => {
+    post.style.display = '';
+  });
+
+  if (value === 'users') {
+    // Скрываем journal-post и popular-post-group (оставляем только popular-post)
+    document.querySelectorAll('.journal-post').forEach(post => post.style.display = 'none');
+    document.querySelectorAll('.popular-post-group').forEach(post => post.style.display = 'none');
+  } else if (value === 'communities') {
+    // Скрываем journal-post и popular-post (оставляем только popular-post-group)
+    document.querySelectorAll('.journal-post').forEach(post => post.style.display = 'none');
+    document.querySelectorAll('.popular-post').forEach(post => post.style.display = 'none');
+  } else if (value === 'logs') {
+    // Скрываем popular-post и popular-post-group (оставляем только journal-post)
+    document.querySelectorAll('.popular-post').forEach(post => post.style.display = 'none');
+    document.querySelectorAll('.popular-post-group').forEach(post => post.style.display = 'none');
+  }
+  // value === 'all' — показываем всё
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const carBrandSelect = document.getElementById('brand-select');
+  const carModelSelect = document.getElementById('model-select');
+  const carActiveFiltersContainer = document.getElementById('active-car-filters');
+  const carFilterApplyBtn = document.querySelector('.car-filter-apply-btn');
+
+  // Отрисовка плитки фильтра: модель внутри марки с отдельным крестиком для модели
+  function renderCarActiveFilters() {
+    const brand = carBrandSelect.value;
+    const model = carModelSelect.value;
+    let html = '';
+
+    if (brand) {
+      const brandText = carBrandSelect.options[carBrandSelect.selectedIndex].text;
+      html += `<span class="car-filter-tag" data-type="brand">
+        ${brandText}
+        ${
+          model
+            ? `<span style="background:rgba(255,255,255,0.13);color:#fff;font-size:14px;font-weight:500;border-radius:7px;padding:3px 10px;margin-left:10px;display:inline-flex;align-items:center;">
+                ${carModelSelect.options[carModelSelect.selectedIndex].text}
+                <button class="car-filter-remove" title="Сбросить модель" onclick="removeCarFilterTag('model')" style="margin-left:7px;"><i class="fas fa-times"></i></button>
+              </span>`
+            : ''
+        }
+        <button class="car-filter-remove" title="Сбросить марку" onclick="removeCarFilterTag('brand')" style="margin-left:10px;"><i class="fas fa-times"></i></button>
+      </span>`;
+    }
+    carActiveFiltersContainer.innerHTML = html;
+  }
+
+  // Сброс фильтра по крестику (можно сбросить только модель или всю марку)
+  window.removeCarFilterTag = function(type) {
+    if (type === 'brand') {
+      carBrandSelect.value = '';
+      carModelSelect.innerHTML = '<option value="">Все модели</option>';
+      carModelSelect.disabled = true;
+    }
+    if (type === 'model') {
+      carModelSelect.value = '';
+    }
+    renderCarActiveFilters();
+  };
+
+  // Кнопка "Применить"
+  carFilterApplyBtn.addEventListener('click', function() {
+    renderCarActiveFilters();
+  });
+});
+
+
+const trendingData = [
+  {
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    name: "Дмитрий Свечиус",
+    username: "@dsvetchius",
+    type: "user"
+  },
+  {
+    avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+    name: "АвтоКлуб Россия",
+    username: "@autoclub_ru",
+    type: "community"
+  },
+  {
+    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
+    name: "Мария Авто",
+    username: "@maria_auto",
+    type: "user"
+  },
+  {
+    avatar: "https://randomuser.me/api/portraits/men/77.jpg",
+    name: "Александр Drive",
+    username: "@alex_drive",
+    type: "user"
+  },
+  {
+    avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+    name: "Елена Speed",
+    username: "@elena_speed",
+    type: "user"
+  }
+];
+
+function renderTrendingList() {
+  const container = document.getElementById('trending-list');
+  container.innerHTML = trendingData.map(item => `
+    <div class="trending-item">
+      <img src="${item.avatar}" alt="avatar" class="trending-avatar">
+      <div class="trending-info">
+        <span class="trending-name">${item.name}</span>
+        <span class="trending-username">${item.username}</span>
+      </div>
+      <button class="trending-follow-btn">Подписаться</button>
+    </div>
+  `).join('') + `<a href="#" class="trending-more">Показать ещё</a>`;
+}
+renderTrendingList();
+
+
+
+
+  </script>
+</body>
+</html>
