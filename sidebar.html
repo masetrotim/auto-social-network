@@ -1,0 +1,66 @@
+<div class="sidebar">
+  <ul class="menu-list">
+    <li class="menu-item">
+      <a href="rec1.html" class="menu-link" data-menu="feed">
+        <span class="menu-icon"><i class="fas fa-home"></i></span>
+        <span class="menu-text">Лента</span>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="vs1.html" class="menu-link" data-menu="search">
+        <span class="menu-icon"><i class="fas fa-search"></i></span>
+        <span class="menu-text">Поиск</span>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="cars.html" class="menu-link" data-menu="cars">
+        <span class="menu-icon"><i class="fas fa-car"></i></span>
+        <span class="menu-text">Машины</span>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="jpurnalsbort.html" class="menu-link" data-menu="journals">
+        <span class="menu-icon"><i class="fas fa-book"></i></span>
+        <span class="menu-text">Бортжурналы</span>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="communities.html" class="menu-link" data-menu="communities">
+        <span class="menu-icon"><i class="fas fa-users"></i></span>
+        <span class="menu-text">Сообщества</span>
+      </a>
+    </li>
+    <li class="menu-item">
+      <a href="profile.html" class="menu-link" data-menu="profile">
+        <span class="menu-icon"><i class="fas fa-user"></i></span>
+        <span class="menu-text">Профиль</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+<script>
+const path = window.location.pathname;
+let activeMenu = '';
+if (path.includes('vs1.html')) {
+  activeMenu = 'search';
+} else if (path.includes('rec1.html')) {
+  activeMenu = 'feed';
+} else if (path.includes('cars.html')) {
+  activeMenu = 'cars';
+} else if (path.includes('jpurnalsbort.html')) {
+  activeMenu = 'journals';
+} else if (path.includes('communities.html')) {
+  activeMenu = 'communities';
+} else if (path.includes('profile.html')) {
+  activeMenu = 'profile';
+}
+
+document.querySelectorAll('.menu-link').forEach(link => {
+  if (link.dataset.menu === activeMenu) {
+    link.parentElement.classList.add('active');
+  } else {
+    link.parentElement.classList.remove('active');
+  }
+});
+</script>
